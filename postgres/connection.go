@@ -19,6 +19,7 @@ var (
 	host     string
 	name     string
 	port     int
+	ssl      string
 )
 
 // Connect creates a connection to database
@@ -75,9 +76,11 @@ func connection() string {
 	name = e.getDBName()
 	user = e.getDBUser()
 	password = e.getDBPass()
+	ssl = e.getDBSSL()
+
 	muDB.Unlock()
 
-	return fmt.Sprintf("user=%s password=%s host=%s dbname=%s port=%d sslmode=disable", user, password, host, name, port)
+	return fmt.Sprintf("user=%s password=%s host=%s dbname=%s port=%d sslmode=%s", user, password, host, name, port, ssl)
 }
 
 func PostgresDB() *sql.DB {
