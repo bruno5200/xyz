@@ -1,0 +1,42 @@
+name: CONTINOUS INTEGRATION
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "Makefile"
+      - "README.md"
+
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "Makefile"
+      - "README.md"
+
+jobs:
+  unit-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          check-latest: true
+  
+      - name: Install dependencies
+        run: go mod download
+
+      - name: Run unit tests
+        run: make test
+
+  vulnerability-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Scanning for vulnerabilities
+        run: make dscan
