@@ -1,6 +1,7 @@
 package client
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/url"
 
@@ -62,7 +63,7 @@ func NewShopifyClient(storeName, accessToken, apiKey, apiPass, apiversion string
 
 	return &client{
 		url:         url,
-		client:      http.DefaultClient,
+		client:      &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}},
 		accessToken: accessToken,
 		apiKey:      apiKey,
 		apiPass:     apiPass,
