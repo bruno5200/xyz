@@ -153,13 +153,14 @@ func (c *Client) Auth(a Auth) error {
 	}
 	resp64 := make([]byte, encoding.EncodedLen(len(resp)))
 	encoding.Encode(resp64, resp)
-	code, msg64, err := c.cmd(0, strings.TrimSpace(fmt.Sprintf("AUTH %s %s", mech, resp64)))
+	code, msg64, err := c.cmd(0, "%s", strings.TrimSpace(fmt.Sprintf("AUTH %s %s", mech, resp64)))
 	for err == nil {
 		var msg []byte
 		switch code {
 		case 334:
 			msg, err = encoding.DecodeString(msg64)
 		case 235:
+			// the last message isn't base64 because it isn't a challenge
 			msg = []byte(msg64)
 		default:
 			err = &textproto.Error{Code: code, Msg: msg64}
@@ -178,7 +179,7 @@ func (c *Client) Auth(a Auth) error {
 		}
 		resp64 = make([]byte, encoding.EncodedLen(len(resp)))
 		encoding.Encode(resp64, resp)
-		code, msg64, err = c.cmd(0, string(resp64))
+		code, msg64, err = c.cmd(0, "%s", resp64)
 	}
 	return err
 }
