@@ -5,6 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
+      - ".github/copilot-instructions.md"
       - "Makefile"
       - "README.md"
 
@@ -12,6 +13,7 @@ on:
     branches:
       - main
     paths-ignore:
+      - ".github/copilot-instructions.md"
       - "Makefile"
       - "README.md"
 
@@ -19,12 +21,12 @@ jobs:
   unit-testing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: "1.25.x"
+          go-version: "1.26.x"
           check-latest: true
   
       - name: Install dependencies
@@ -36,7 +38,7 @@ jobs:
   vulnerability-testing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Scanning for vulnerabilities
         run: make dscan

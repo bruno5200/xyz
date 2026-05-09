@@ -58,6 +58,9 @@ func (ss *ServerList) SetServers(servers ...string) error {
 func (ss *ServerList) Each(f func(net.Addr) error) error {
 	ss.mu.RLock()
 	defer ss.mu.RUnlock()
+	if len(ss.addrs) == 0 {
+		return ErrNoServers
+	}
 	for _, a := range ss.addrs {
 		if err := f(a); nil != err {
 			return err
@@ -67,7 +70,7 @@ func (ss *ServerList) Each(f func(net.Addr) error) error {
 }
 
 var keyBufPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		b := make([]byte, 256)
 		return &b
 	},

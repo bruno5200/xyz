@@ -13,13 +13,6 @@ var (
 	// is a pointer to the database connection
 	db   *sql.DB
 	once sync.Once
-
-	user     string
-	password string
-	host     string
-	name     string
-	port     int
-	ssl      string
 )
 
 // Connect creates a connection to database
@@ -31,6 +24,8 @@ var (
 // # Connect is thread safe
 //
 // Connect uses the following environment variables:
+//
+// - `DATABASE_URL`: A full database connection URL (optional, takes precedence over individual variables).
 //
 // - `DB_HOST`: Host of postgres DB.
 //
@@ -46,14 +41,7 @@ var (
 func NewConnection() {
 
 	once.Do(func() {
-
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		go e.initDB(&wg)
-		wg.Wait()
-
 		connStr := connection()
-
 		var err error
 
 		if db, err = sql.Open("postgres", connStr); err != nil {
@@ -62,25 +50,22 @@ func NewConnection() {
 
 		if err := db.Ping(); err != nil {
 			log.Panicf("Error pinging database %s", err)
-		} else {
-			fmt.Println("Connected to postgres!")
 		}
+
+		fmt.Println("Connected to postgres!")
 	})
 }
 
 func connection() string {
-
+	e.initDB()
 	muDB.Lock()
-	host = e.getDBHost()
-	port = e.getDBPort()
-	name = e.getDBName()
-	user = e.getDBUser()
-	password = e.getDBPass()
-	ssl = e.getDBSSL()
+	defer muDB.Unlock()
 
-	muDB.Unlock()
+	if e.getDBURL() != "" {
+		return e.getDBURL()
+	}
 
-	return fmt.Sprintf("user=%s password=%s host=%s dbname=%s port=%d sslmode=%s", user, password, host, name, port, ssl)
+	return fmt.Sprintf("user=%s password=%s host=%s dbname=%s port=%d sslmode=%s", e.getDBUser(), e.getDBPass(), e.getDBHost(), e.getDBName(), e.getDBPort(), e.getDBSSL())
 }
 
 func PostgresDB() *sql.DB {

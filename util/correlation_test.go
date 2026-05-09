@@ -16,8 +16,8 @@ func TestGenCorrelationId(t *testing.T) {
 
 		id := u.GenCorrelationId()
 
-		if len(id) != int(u.CorrelationLength) {
-			t.Errorf("Expected length %d, got %d", u.CorrelationLength, len(id))
+		if len(id) != int(u.CorrelationLength*2) {
+			t.Errorf("Expected length %d, got %d", u.CorrelationLength*2, len(id))
 		}
 
 		if correlationIds[id] {

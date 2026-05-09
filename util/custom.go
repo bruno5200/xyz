@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -14,11 +15,14 @@ const ctLayout = "2006-01-02T15:04:05.9999999"
 
 func (ct *CustomTime) UnmarshalJSON(b []byte) (err error) {
 
-	s := string(b)
+	var s string
+	if err = json.Unmarshal(b, &s); err != nil {
+		// Handle cases where the JSON value is not a string (e.g., null)
+		// or if it's an invalid string literal.
+		return fmt.Errorf("error unmarshalling CustomTime JSON: %w", err)
+	}
 
-	s = s[1 : len(s)-1] // remove quotes
-
-	ct.Time, err = time.Parse(ctLayout, s)
+	ct.Time, err = time.Parse(ctLayout, strings.TrimSpace(s)) // Trim space in case of leading/trailing whitespace
 
 	if err != nil {
 		return fmt.Errorf("error parsing time %q as %q: %v", s, ctLayout, err)

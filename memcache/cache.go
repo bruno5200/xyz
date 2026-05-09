@@ -408,6 +408,7 @@ func (c *Client) ping(addr net.Addr) error {
 
 func (c *Client) touchFromAddr(addr net.Addr, keys []string, expiration int32) error {
 	return c.withAddrRw(addr, func(rw *bufio.ReadWriter) error {
+	checkFor:
 		for _, key := range keys {
 			if _, err := fmt.Fprintf(rw, "touch %s %d\r\n", key, expiration); err != nil {
 				return err
@@ -424,7 +425,7 @@ func (c *Client) touchFromAddr(addr net.Addr, keys []string, expiration int32) e
 
 			switch {
 			case bytes.Equal(line, resultTouched):
-				return nil
+				break checkFor
 			case bytes.Equal(line, resultNotFound):
 				return ErrCacheMiss
 			default:
@@ -439,7 +440,7 @@ func (c *Client) GetMulti(keys []string) (map[string]*Item, error) {
 
 	var lk sync.Mutex
 
-	m := make(map[string]*Item)
+	m := make(map[string]*Item, len(keys))
 
 	addItemToMap := func(it *Item) {
 		lk.Lock()
@@ -455,7 +456,7 @@ func (c *Client) GetMulti(keys []string) (map[string]*Item, error) {
 		}
 		addr, err := c.selector.PickServer(key)
 		if err != nil {
-			return nil, err
+			continue
 		}
 		keyMap[addr] = append(keyMap[addr], key)
 	}

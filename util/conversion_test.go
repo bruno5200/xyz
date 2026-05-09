@@ -13,36 +13,43 @@ func TestStringToInt(t *testing.T) {
 	var tests = []struct {
 		s    string
 		want int
+		err  bool // true if an error is expected
 		test string
 	}{
 		{
 			"",
 			0,
+			true,
 			"empty string",
 		},
 		{
 			"1",
 			1,
+			false,
 			"valid string to int",
 		},
 		{
 			"2b",
 			0,
+			true,
 			"invalid number",
 		},
 		{
 			"2b%",
 			0,
+			true,
 			"invalid string with special characters",
 		},
 		{
 			"A2",
 			0,
+			true,
 			"invalid string with letters",
 		},
 		{
 			"1000",
 			1000,
+			false,
 			"valid",
 		},
 	}
@@ -50,11 +57,11 @@ func TestStringToInt(t *testing.T) {
 	for _, test := range tests {
 		t.Logf("Testing %s", test.test)
 		got, err := u.StringToInt(test.s)
-		if err != nil {
-			t.Logf("StringToInt(%s) = %v, want %v", test.s, got, test.want)
+		if (err != nil) != test.err {
+			t.Errorf("StringToInt(%q) error status = %v, want %v", test.s, err != nil, test.err)
 		}
-		if got != test.want {
-			t.Errorf("StringToInt(%s) = %v, want %v", test.s, got, test.want)
+		if !test.err && got != test.want { // Only check value if no error is expected
+			t.Errorf("StringToInt(%q) = %v, want %v", test.s, got, test.want)
 		}
 	}
 }
@@ -116,46 +123,55 @@ func TestStringToFloat64(t *testing.T) {
 	var tests = []struct {
 		s    string
 		want float64
+		err  bool // true if an error is expected
 		test string
 	}{
 		{
 			"",
 			0,
+			true,
 			"empty string",
 		},
 		{
 			"1",
 			1,
+			false,
 			"valid string to int",
 		},
 		{
 			"2,18",
 			2.18,
+			false,
 			"valid string to float",
 		},
 		{
 			"2.1°",
 			0,
+			true,
 			"invalid decimal with letters",
 		},
 		{
 			"2b",
 			0,
+			true,
 			"invalid number",
 		},
 		{
 			"2b%",
 			0,
+			true,
 			"invalid string with special characters",
 		},
 		{
 			".",
 			0,
+			true,
 			"invalid string with point",
 		},
 		{
 			"2.0",
 			2.0,
+			false,
 			"invalid string number with point",
 		},
 	}
@@ -163,10 +179,13 @@ func TestStringToFloat64(t *testing.T) {
 	for i := range tests {
 		test := tests[i]
 		t.Run(test.test, func(t *testing.T) {
-			t.Parallel()
-			got, _ := u.StringToFloat64(test.s)
-			if got != test.want {
-				t.Errorf("StringToInt(%s) = %v, want %v", test.s, got, test.want)
+			t.Parallel() // Keep parallel if tests are independent
+			got, err := u.StringToFloat64(test.s)
+			if (err != nil) != test.err {
+				t.Errorf("StringToFloat64(%q) error status = %v, want %v", test.s, err != nil, test.err)
+			}
+			if !test.err && got != test.want { // Only check value if no error is expected
+				t.Errorf("StringToFloat64(%q) = %v, want %v", test.s, got, test.want)
 			}
 			t.Logf("Result %f", got)
 		})
@@ -434,7 +453,7 @@ func TestFirstIdentifier(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		got := u.FisrtIdentifier(test.id)
+		got := u.FirstIdentifier(test.id) // Fixed typo
 		t.Logf("Testing %s", test.id)
 		if got != test.want {
 			t.Errorf("ShortIdentifier(%s) = %s, want %s", test.id, got, test.want)
